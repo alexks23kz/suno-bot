@@ -350,12 +350,14 @@ async def main():
     app.router.add_post(CALLBACK_PATH, suno_callback)
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    site = web.TCPSite(runner, "0.0.0.0", int(os.getenv("PORT", 10000)))  # ✅ Фикс: 0.0.0.0 + $PORT
     await site.start()
-    print(f"Callback URL: {CALLBACK_URL}")
 
-    print("Бот запущен (polling + callback)")
-    await dp.start_polling(bot)
+    webhook_url = f"{WEBHOOK_HOST}/webhook"  # Для Telegram webhook
+    await bot.set_webhook(webhook_url)
+    print(f"Webhook: {webhook_url}")
+
+    await dp.start_polling(bot)  # Polling для Telegram (параллельно)
 
 if __name__ == "__main__":
     asyncio.run(main())
